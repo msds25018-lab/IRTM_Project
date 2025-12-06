@@ -1,0 +1,4 @@
+saved_trains/topic_names.json
+saved_trains/bertopic_model
+saved_trains/embeddings.npy
+saved_trains/metadata.json
