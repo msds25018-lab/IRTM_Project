@@ -3,7 +3,7 @@ from glob import glob
 from PIL import Image
 import streamlit as st
 
-st.set_page_config(layout="wide", page_title="Saved Graphs Viewer")
+st.set_page_config(layout="wide", page_title="Overview App")
 
 GRAPHS_DIR = "graphs"
 assets_dir = "app_assets"
