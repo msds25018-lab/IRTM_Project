@@ -65,11 +65,34 @@ elif section == "Topic Relevance":
     st.markdown("# Topic Relevance")
     if topic_img:
         st.image(Image.open(topic_img), use_column_width=True, caption = "Topic Relevance In News Over Time")
+    st.markdown(
+        '''
+        The topic relevance over time plot starts with per-document topic assignments produced by your BERTopic model. Each article is passed through the saved model (using precomputed embeddings) and receives a topic id; those ids are added to the dataframe so every record has both a timestamp and a topic label. These document-level labels are the raw data used to measure how prominent each topic is in each time period.
+        
+        Next, documents are grouped into regular time bins (monthly in your code) by converting each article’s timestamp into a month period. For every combination of month and topic the code counts how many documents were assigned to that topic, producing a time-by-topic frequency tablewhere each cell is the number of documents for that topic in that month.
+        
+        To make values comparable across months with different article volumes, the frequency table is converted into proportions: each topic’s monthly count is divided by the total number of documents in that month. Those proportions are the topic relevance values — they represent the share of the month’s corpus that belongs to each topic, so they sum to 1 across topics for each month and allow direct comparison of topic prominence across time.
+        
+        Finally, the script selects the top topics by overall relevance (the topics with the largest summed proportions across all months) and plots their relevance series over the monthly time axis. Each plotted line shows how a topic’s share of coverage changes over time, making it easy to see growth, decline, seasonality, or persistent dominance in the news stream. 
+        
+        '''
+    )
 
 elif section == "Z-score":
     st.markdown("# Z-score")
     if heatmap_img:
         st.image(Image.open(heatmap_img), use_column_width=True, caption = "Z-score Heatmap")
+    
+    st.markdown(
+        '''
+        The z-score measures how unusual a topic’s current share of coverage is compared with its recent behavior. Starting from the normalized relevance matrix (topic proportion per time bin), compute a short-window rolling mean and rolling standard deviation for each topic, then standardize each month’s relevance by subtracting the rolling mean and dividing by the rolling standard deviation. Positive z-scores indicate above‑normal prominence; negative scores indicate below‑normal prominence.
+
+        Before dividing, guard against instability by flooring the rolling standard deviation to a small positive value and replacing infinities or NaNs so the matrix stays numeric. The choice of rolling window controls sensitivity: a shorter window highlights short-term anomalies, a longer window smooths them out.
+
+        To visualize, select the topics to show (for example, the top‑k by overall relevance), arrange the z-score data with topics as rows and time bins as columns, and plot a diverging heatmap centered at zero. Use readable time labels on the x-axis, human‑readable topic names on the y-axis, and a colorbar labeled “z-score” so viewers can quickly spot months with unusually high or low topic prominence.
+        
+        '''
+    )
 
 elif section == "Conclusion":
     st.markdown("<h1 style='text-align:center; font-size:64px; margin-top:40px;'>CONCLUSION</h1>", unsafe_allow_html=True)
