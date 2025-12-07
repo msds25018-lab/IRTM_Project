@@ -1,35 +1,70 @@
-# streamlit_show_graphs.py
+# streamlit_single_page.py
 import os
 from glob import glob
 from PIL import Image
 import streamlit as st
 
 st.set_page_config(layout="wide", page_title="Saved Graphs Viewer")
-st.title("Saved Graphs Viewer")
 
 GRAPHS_DIR = "graphs"
 os.makedirs(GRAPHS_DIR, exist_ok=True)
 
-# find PNG/JPG files in the folder
+# gather images
 image_paths = sorted(glob(os.path.join(GRAPHS_DIR, "*.png")) + glob(os.path.join(GRAPHS_DIR, "*.jpg")))
 
-if not image_paths:
-    st.warning(f"No images found in '{GRAPHS_DIR}'. Place your two graph images there and refresh.")
-else:
-    # If there are exactly two images, show them side-by-side; otherwise allow selection
-    if len(image_paths) == 2:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(Image.open(image_paths[0]), use_column_width=True, caption=os.path.basename(image_paths[0]))
-        with col2:
-            st.image(Image.open(image_paths[1]), use_column_width=True, caption=os.path.basename(image_paths[1]))
-    else:
-        st.sidebar.header("Choose image to display")
-        choice = st.sidebar.selectbox("Image", [os.path.basename(p) for p in image_paths])
-        selected_path = os.path.join(GRAPHS_DIR, choice)
-        st.image(Image.open(selected_path), use_column_width=True, caption=choice)
+st.sidebar.title("Navigation")
+section = st.sidebar.radio("Go to", ("Welcome", "Introduction", "Topic Relevance", "Z-score", "Conclusion"))
 
-    st.markdown("---")
-    st.write("Available files:")
-    for p in image_paths:
-        st.write(f"- {os.path.basename(p)}")
+def find_by_keywords(paths, keywords):
+    for p in paths:
+        name = os.path.basename(p).lower()
+        for k in keywords:
+            if k in name:
+                return p
+    return None
+
+topic_img = find_by_keywords(image_paths, ("topic", "topics", "relevance"))
+heatmap_img = find_by_keywords(image_paths, ("heatmap", "zscore", "z-score", "z_score"))
+
+# simple fallbacks (minimal logic)
+if not topic_img and image_paths:
+    topic_img = image_paths[0]
+if not heatmap_img and len(image_paths) > 1:
+    heatmap_img = image_paths[1]
+elif not heatmap_img and image_paths:
+    heatmap_img = image_paths[0]
+
+if section == "Welcome":
+    st.markdown("<h1 style='text-align:center; font-size:72px; margin-top:40px;'>WELCOME</h1>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; font-size:20px; margin-top:20px;'>Welcome to the single-page viewer.</div>", unsafe_allow_html=True)
+
+elif section == "Introduction":
+    st.markdown("# Introduction")
+    st.markdown(
+        """
+        **Purpose:** A compact single-page Streamlit app with left-side navigation.
+        
+        **Usage:** Use the sidebar to jump between sections. Place your PNG/JPG graphs in the `graphs/` folder.
+        
+        **Contents:** Welcome screen, an introduction, a topic relevance graph, a z-score heatmap, and a conclusion screen.
+        """
+    )
+
+elif section == "Topic Relevance":
+    st.markdown("# Topic Relevance")
+    if topic_img:
+        st.image(Image.open(topic_img), use_column_width=True, caption=os.path.basename(topic_img))
+
+elif section == "Z-score":
+    st.markdown("# Z-score")
+    if heatmap_img:
+        st.image(Image.open(heatmap_img), use_column_width=True, caption=os.path.basename(heatmap_img))
+
+elif section == "Conclusion":
+    st.markdown("<h1 style='text-align:center; font-size:64px; margin-top:40px;'>CONCLUSION</h1>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; font-size:20px; margin-top:20px;'>Key takeaways and final remarks.</div>", unsafe_allow_html=True)
+
+# sidebar: list available files (minimal)
+st.sidebar.markdown("### Available files")
+for p in image_paths:
+    st.sidebar.write(os.path.basename(p))
